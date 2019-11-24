@@ -14,6 +14,7 @@ from rllab.envs.mujoco.ant_env import AntEnv
 
 #import gym envs
 import gym
+import logging
 from gym import wrappers
 from gym.envs.mujoco.reacher import ReacherEnv
 from rllab.envs.gym_env import GymEnv
@@ -28,15 +29,15 @@ def add_noise(data_inp, noiseToSignal):
             data[:,j] = np.copy(data[:,j]+np.random.normal(0, np.absolute(std_of_noise[j]), (data.shape[0],)))
     return data
 
-def perform_rollouts(policy, num_rollouts, steps_per_rollout, visualize_rollouts, CollectSamples, 
+def perform_rollouts(policy, num_rollouts, steps_per_rollout, visualize_rollouts, CollectSamples,
                     env, which_agent, dt_steps, dt_from_xml, follow_trajectories):
     #collect training data by performing rollouts
     print("Beginning to do ", num_rollouts, " rollouts.")
     c = CollectSamples(env, policy, visualize_rollouts, which_agent, dt_steps, dt_from_xml, follow_trajectories)
-    states, controls, starting_states, rewards_list = c.collect_samples(num_rollouts, steps_per_rollout)
+    states, controls, starting_states, replay_buffer = c.collect_samples(num_rollouts, steps_per_rollout)
 
     print("Performed ", len(states), " rollouts, each with ", states[0].shape[0], " steps.")
-    return states, controls, starting_states, rewards_list
+    return states, controls, starting_states, replay_buffer
 
 
 def create_env(which_agent):
@@ -49,7 +50,7 @@ def create_env(which_agent):
     elif(which_agent==2):
         env = normalize(SwimmerEnv()) #dt 0.001 and frameskip=150
     elif(which_agent==3):
-        env = ReacherEnv() 
+        env = gym.make("modified_gym_env:ReacherPyBulletEnv-v1")
     elif(which_agent==4):
         env = normalize(HalfCheetahEnv())
     elif(which_agent==5):
@@ -68,7 +69,7 @@ def create_env(which_agent):
 
     #set vars
     tf.set_random_seed(2)
-    gym.logger.setLevel(gym.logging.WARNING)
+    gym.logger.setLevel(logging.WARN)
     dimO = env.observation_space.shape
     dimA = env.action_space.shape
     print ('--------------------------------- \nState space dimension: ', dimO)

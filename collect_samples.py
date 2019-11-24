@@ -3,6 +3,9 @@ import rllab
 import time
 import matplotlib.pyplot as plt
 import copy
+from collections import deque
+from HER import HER
+from copy import deepcopy as dc
 
 class CollectSamples(object):
 
@@ -23,12 +26,14 @@ class CollectSamples(object):
         self.dt_from_xml = dt_from_xml
 
         self.follow_trajectories = follow_trajectories
+        self.replay_buffer = deque()
+        self.her = HER(self.env.observation_space.shape[0])
         
     def collect_samples(self, num_rollouts, steps_per_rollout):
         observations_list = []
         actions_list = []
         starting_states_list=[]
-        rewards_list = []
+        replay_buffer_list = []
         visualization_frequency = 10
         for rollout_number in range(num_rollouts):
             if(self.which_agent==2):
@@ -38,26 +43,25 @@ class CollectSamples(object):
                     observation, starting_state = self.env.reset(returnStartState=True, isSwimmer=True)
             else:
                 observation, starting_state = self.env.reset(returnStartState=True)
-            observations, actions, reward_for_rollout = self.perform_rollout(observation, steps_per_rollout, 
+            observations, actions, replay_buffer = self.perform_rollout(observation, steps_per_rollout,
                                                                         rollout_number, visualization_frequency)
 
-            rewards_list.append(reward_for_rollout)
             observations= np.array(observations)
             actions= np.array(actions)
             observations_list.append(observations)
             actions_list.append(actions)
             starting_states_list.append(starting_state)
+            replay_buffer_list.append(replay_buffer)
 
         #return list of length = num rollouts
         #each entry of that list contains one rollout
         #each entry is [steps_per_rollout x statespace_dim] or [steps_per_rollout x actionspace_dim]
-        return observations_list, actions_list, starting_states_list, rewards_list
+        return observations_list, actions_list, starting_states_list, replay_buffer_list
 
     def perform_rollout(self, observation, steps_per_rollout, rollout_number, visualization_frequency):
         observations = []
         actions = []
         visualize = False
-        reward_for_rollout = 0
         if((rollout_number%visualization_frequency)==0):
             print("currently performing rollout #", rollout_number)
             if(self.visualize_at_all):
@@ -72,8 +76,12 @@ class CollectSamples(object):
             actions.append(action)
 
             next_observation, reward, terminal, _ = self.env.step(action, collectingInitialData=True)
-            reward_for_rollout+= reward
 
+            self.replay_buffer.append(
+                [dc(observation.squeeze(0).numpy()), dc(action), dc(reward), dc(next_observation.squeeze(0).numpy()), dc(terminal)])
+            self.her.keep([observation.squeeze(0).numpy(), action, reward, next_observation.squeeze(0).numpy(), terminal])
+            if (terminal == True):
+                break
             observation = np.copy(next_observation)
             
             if terminal:
@@ -92,4 +100,9 @@ class CollectSamples(object):
             all_states= np.concatenate(all_states, axis=0)
             plt.plot(all_states[:,0], all_states[:,1], 'r')
             plt.show()
-        return observations, actions, reward_for_rollout
+
+        her_list = self.her.backward()
+        for item in her_list:
+            self.replay_buffer.append(item)
+
+        return observations, actions, self.replay_buffer
