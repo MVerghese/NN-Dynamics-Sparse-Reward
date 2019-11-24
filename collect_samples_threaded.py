@@ -18,6 +18,7 @@ class CollectSamples(object):
 
         self.stateDim = self.main_env.observation_space.shape[0]
         self.actionDim = self.main_env.action_space.shape[0]
+        self.rewardDim = 1
 
         self.dt_steps = dt_steps
         self.dt_from_xml = dt_from_xml
@@ -43,18 +44,22 @@ class CollectSamples(object):
         #return lists of length = num rollouts
         #each entry contains one rollout
         #each entry is [steps_per_rollout x statespace_dim] or [steps_per_rollout x actionspace_dim]
-        return self.list_observations, self.list_actions, self.list_starting_states, []
+        return self.list_observations, self.list_actions, self.list_rewards, self.list_next_observations, self.list_starting_states
 
     def mycallback(self, x): #x is shape [numSteps, state + action]
         self.list_observations.append(x[:,0:self.stateDim])
         self.list_actions.append(x[:,self.stateDim:(self.stateDim+self.actionDim)])
-        self.list_starting_states.append(x[0,(self.stateDim+self.actionDim):])
+        self.list_rewards.append(x[:,(self.stateDim+self.actionDim):self.rewardDim])
+        self.list_next_observations.append(x[:,(self.stateDim+self.actionDim+self.rewardDim):self.stateDim])
+        self.list_starting_states.append(x[0,(self.stateDim+self.actionDim+self.stateDim+self.rewardDim):])
 
     def do_rollout(self, steps_per_rollout, rollout_number, visualization_frequency):
         #init vars
         #print("START ", rollout_number)
         observations = []
         actions = []
+        rewards = []
+        next_observations = []
         visualize = False
 
         env = copy.deepcopy(self.main_env)
@@ -86,6 +91,8 @@ class CollectSamples(object):
 
             #perform the action
             next_observation, reward, terminal, _ = env.step(action, collectingInitialData=True)
+            rewards.append(reward)
+            next_observations.append(next_observation)
 
             #update the observation
             observation = np.copy(next_observation)
@@ -111,4 +118,4 @@ class CollectSamples(object):
             print("Completed rollout # ", rollout_number)
 
         array_starting_state = np.tile(starting_state, (np.array(actions).shape[0],1))
-        return np.concatenate((np.array(observations), np.array(actions), array_starting_state), axis=1)
+        return np.concatenate((np.array(observations), np.array(actions), np.array(rewards), np.array(next_observations), array_starting_state), axis=1)
