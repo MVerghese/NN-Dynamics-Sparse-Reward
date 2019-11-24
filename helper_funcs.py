@@ -101,3 +101,12 @@ def visualize_rendering(starting_state, list_of_actions, env_inp, dt_steps, dt_f
 
     print("Done rendering.")
     return
+
+def discounted_returns(rewards, gamma=0.99):
+    discounted_rewards = []
+    for i in range(len(rewards)):
+        coeff = [gamma ** k for k in range(len(rewards[i]))]
+        for j in range(len(rewards[i])):
+            temp = len(rewards[i]) - j
+            discounted_rewards.append(np.sum(rewards[i][j:] * coeff[:temp]))
+    return discounted_rewards
