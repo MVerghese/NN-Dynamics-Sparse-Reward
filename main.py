@@ -242,7 +242,7 @@ def main():
                 print("#####################################\n")
 
             #perform rollouts
-            states, controls, _, replay_buffer = perform_rollouts(random_policy, num_rollouts_train, steps_per_rollout_train, visualize_False,
+            states, controls, _, replay_states, replay_controls, replay_rewards = perform_rollouts(random_policy, num_rollouts_train, steps_per_rollout_train, visualize_False,
                                                     CollectSamples, env, which_agent, dt_steps, dt_from_xml, follow_trajectories)
 
             if(not(print_minimal)):
@@ -251,7 +251,7 @@ def main():
                 print("#####################################\n")
 
             start_validation_rollouts = time.time()
-            states_val, controls_val, _, replay_buffer_val = perform_rollouts(random_policy, num_rollouts_val, steps_per_rollout_val, visualize_False,
+            states_val, controls_val, _, replay_states_val, replay_controls_val, replay_rewards_val = perform_rollouts(random_policy, num_rollouts_val, steps_per_rollout_val, visualize_False,
                                                             CollectSamples, env, which_agent, dt_steps, dt_from_xml, follow_trajectories)
             
             if(not(print_minimal)):
@@ -288,7 +288,7 @@ def main():
                 print("Perform rollout & save for forward sim")
                 print("#####################################\n")
 
-            states_forwardsim_orig, controls_forwardsim, _, replay_buffer_forwardsim = perform_rollouts(random_policy, 1, 100,
+            states_forwardsim_orig, controls_forwardsim, _, replay_states_forwardsim, replay_controls_forwardsim, replay_rewards_forwardsim = perform_rollouts(random_policy, 1, 100,
                                                                             visualize_False, CollectSamples, 
                                                                             env, which_agent, dt_steps, 
                                                                             dt_from_xml, follow_trajectories)
