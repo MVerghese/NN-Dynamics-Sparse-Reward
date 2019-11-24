@@ -28,6 +28,7 @@ from helper_funcs import create_env
 from helper_funcs import visualize_rendering
 from helper_funcs import add_noise
 from dynamics_model import Dyn_Model
+from critic_model import Cri_Model
 from mpc_controller import MPCController
 
 def main():
@@ -380,6 +381,9 @@ def main():
         #initialize dynamics model
         dyn_model = Dyn_Model(inputSize, outputSize, sess, lr, batchsize, which_agent, x_index, y_index, num_fc_layers,
                             depth_fc_layers, mean_x, mean_y, mean_z, std_x, std_y, std_z, tf_datatype, print_minimal)
+
+        dyn_model = Dyn_Model(inputSize, 1, sess, lr, batchsize, which_agent, x_index, y_index, num_fc_layers,
+                            depth_fc_layers, mean_x, mean_y, mean_r, std_x, std_y, std_r, tf_datatype, print_minimal)
 
         #create mpc controller
         mpc_controller = MPCController(env, dyn_model, horizon, which_agent, steps_per_episode, dt_steps, num_control_samples, 
