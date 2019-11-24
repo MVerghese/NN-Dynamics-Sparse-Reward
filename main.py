@@ -382,7 +382,7 @@ def main():
         dyn_model = Dyn_Model(inputSize, outputSize, sess, lr, batchsize, which_agent, x_index, y_index, num_fc_layers,
                             depth_fc_layers, mean_x, mean_y, mean_z, std_x, std_y, std_z, tf_datatype, print_minimal)
 
-        dyn_model = Dyn_Model(inputSize, 1, sess, lr, batchsize, which_agent, x_index, y_index, num_fc_layers,
+        cri_model = Cri_Model(inputSize, 1, sess, lr, batchsize, which_agent, x_index, y_index, num_fc_layers,
                             depth_fc_layers, mean_x, mean_y, mean_r, std_x, std_y, std_r, tf_datatype, print_minimal)
 
         #create mpc controller
@@ -439,6 +439,9 @@ def main():
                 new_loss=0
             else:
                 training_loss, old_loss, new_loss = dyn_model.train(inputs, outputs, inputs_new, outputs_new, 
+                                                                    nEpoch, save_dir, fraction_use_new)
+
+                cri_training_loss, cri_old_loss, cri_new_loss = cri_model.train(inputs, outputs, inputs_new, outputs_new, 
                                                                     nEpoch, save_dir, fraction_use_new)
 
             #how good is model on training data
