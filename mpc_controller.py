@@ -22,6 +22,7 @@ class MPCController:
         self.which_agent = which_agent
         self.horizon = horizon
         self.dyn_model = dyn_model
+        self.cri_model = cri_model
         self.steps_per_episode = steps_per_episode 
         self.mean_x = mean_x
         self.mean_y = mean_y
@@ -191,6 +192,7 @@ class MPCController:
         moved_to_next = np.zeros((self.N,))
         prev_pt = resulting_states[0]
 
+        """
         #accumulate reward over each timestep
         for pt_number in range(resulting_states.shape[0]):
 
@@ -208,10 +210,21 @@ class MPCController:
             #update vars
             prev_forward = np.copy(curr_forward)
             prev_pt = np.copy(pt)
+            """
+
+         for pt_number in range(resulting_states.shape[0]):
+
+            #array of "the point"... for each sim
+            pt = resulting_states[pt_number] # N x state
+
+            pt_scores = self.cri_model.eval_model(np.copy(pt),self.env,self.which_agent)
+
+            scores += pt_scores
+
 
         #pick best action sequence
-        best_score = np.min(scores)
-        best_sim_number = np.argmin(scores) 
+        best_score = np.max(scores)
+        best_sim_number = np.argmax(scores) 
         best_sequence = all_samples[best_sim_number]
         best_action = np.copy(best_sequence[0])
 

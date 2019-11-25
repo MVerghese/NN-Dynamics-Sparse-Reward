@@ -382,11 +382,12 @@ def main():
         dyn_model = Dyn_Model(inputSize, outputSize, sess, lr, batchsize, which_agent, x_index, y_index, num_fc_layers,
                             depth_fc_layers, mean_x, mean_y, mean_z, std_x, std_y, std_z, tf_datatype, print_minimal)
 
+        #TODO modify input size
         cri_model = Cri_Model(inputSize, 1, sess, lr, batchsize, which_agent, x_index, y_index, num_fc_layers,
                             depth_fc_layers, mean_x, mean_y, mean_r, std_x, std_y, std_r, tf_datatype, print_minimal)
 
         #create mpc controller
-        mpc_controller = MPCController(env, dyn_model, horizon, which_agent, steps_per_episode, dt_steps, num_control_samples, 
+        mpc_controller = MPCController(env, dyn_model, cri_model, horizon, which_agent, steps_per_episode, dt_steps, num_control_samples, 
                                         mean_x, mean_y, mean_z, std_x, std_y, std_z, actions_ag, print_minimal, x_index, y_index, 
                                         z_index, yaw_index, joint1_index, joint2_index, frontleg_index, frontshin_index, 
                                         frontfoot_index, xvel_index, orientation_index)

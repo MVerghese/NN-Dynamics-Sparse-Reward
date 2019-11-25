@@ -39,7 +39,7 @@ class Cri_Model:
 
         #loss
         self.mse_ = tf.reduce_mean(tf.square(self.z_ - self.curr_nn_output))
-        
+
 
         # Compute gradients and update parameters
         self.opt = tf.train.AdamOptimizer(learning_rate)
@@ -193,6 +193,34 @@ class Cri_Model:
         print ("Validation set's total loss: ", avg_loss/iters_in_batch)
 
         return (avg_loss/iters_in_batch)
+
+    def eval_model(self, forwardsim_x_true, env_inp, which_agent):
+        N= forwardsim_y.shape[0]
+        horizon = forwardsim_y.shape[1]
+        #array_stdz = np.tile(np.expand_dims(self.std_z, axis=0),(N,1))
+        #array_meanz = np.tile(np.expand_dims(self.mean_z, axis=0),(N,1))
+        array_stdy = np.tile(np.expand_dims(self.std_y, axis=0),(N,1))
+        array_meany = np.tile(np.expand_dims(self.mean_y, axis=0),(N,1))
+        array_stdx = np.tile(np.expand_dims(self.std_x, axis=0),(N,1))
+        array_meanx = np.tile(np.expand_dims(self.mean_x, axis=0),(N,1))
+
+        if(len(forwardsim_x_true)==2):
+            #N starting states, one for each of the simultaneous sims
+            curr_states=np.tile(forwardsim_x_true[0], (N,1))
+        else:
+            curr_states=np.copy(forwardsim_x_true)
+
+        states_preprocessed = np.nan_to_num(np.divide((curr_states-array_meanx), array_stdx))
+
+        inputs_list= np.concatenate((states_preprocessed, actions_preprocessed), axis=1)
+
+        #run the N sims all at once
+        model_output = self.sess.run([self.curr_nn_output], feed_dict={self.x_: inputs_list})
+
+        return(model_output)
+
+
+
 
     #multistep prediction using the learned dynamics model at each step
     def do_forward_sim(self, forwardsim_x_true, forwardsim_y, many_in_parallel, env_inp, which_agent):
