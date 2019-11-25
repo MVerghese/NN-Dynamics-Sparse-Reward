@@ -9,6 +9,7 @@ from six.moves import cPickle
 from rllab.misc import tensor_utils
 from data_manipulation import from_observation_to_usablestate
 from reward_functions import RewardFunctions
+from HER import HER
 
 class MPCController:
 
@@ -45,7 +46,8 @@ class MPCController:
         self.print_minimal = print_minimal
         self.reward_functions = RewardFunctions(self.which_agent, self.x_index, self.y_index, self.z_index, self.yaw_index, 
                                                 self.joint1_index, self.joint2_index, self.frontleg_index, self.frontshin_index, 
-                                                self.frontfoot_index, self.xvel_index, self.orientation_index)       
+                                                self.frontfoot_index, self.xvel_index, self.orientation_index)
+        self.her = HER()
 
     def perform_rollout(self, starting_fullenvstate, starting_observation, starting_observation_NNinput, desired_states, follow_trajectories, 
                         horiz_penalty_factor, forward_encouragement_factor, heading_penalty_factor, noise_actions, noise_amount):
@@ -55,6 +57,9 @@ class MPCController:
         actions_taken=[]
         observations = [] #list of observations (direct output of the env)
         rewards = []
+        replay_observations = []
+        replay_rewards = []
+        replay_next_observations = []
         agent_infos = []
         env_infos = []
 
@@ -122,12 +127,19 @@ class MPCController:
             #check if done
             if(done):
                 stop_taking_steps=True
+                replay_observations.append(obs)
+                replay_rewards.append(rew)
+                replay_next_observations.append(next_state)
             else:
                 #save things
                 observations.append(obs)
                 rewards.append(rew)
                 env_infos.append(env_info)
                 total_reward_for_episode += rew
+
+                replay_observations.append(obs)
+                replay_rewards.append(rew)
+                replay_next_observations.append(next_state)
 
                 #whether to save clean or noisy actions
                 if(self.actions_ag=='nn'):
@@ -171,7 +183,13 @@ class MPCController:
         agent_infos=agent_infos,
         env_infos=tensor_utils.stack_tensor_dict_list(env_infos))
 
-        return traj_taken, actions_taken, total_reward_for_episode, mydict
+        new_observations, new_rewards, new_next_observations = self.her.backward(replay_observations,replay_rewards,
+                replay_next_observations)
+
+        replay_observations_list = np.concatenate(replay_observations, new_observations)
+        replay_rewards_list = np.concatenate(replay_rewards, new_rewards)
+
+        return traj_taken, actions_taken, total_reward_for_episode, mydict, replay_observations_list, replay_rewards_list
 
     def get_action(self, curr_nn_state, curr_line_segment, reward_func):
         #randomly sample N candidate action sequences

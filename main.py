@@ -643,6 +643,8 @@ def main():
             starting_states=[]
             selected_multiple_u = []
             resulting_multiple_x = []
+            critic_states = []
+            critic_rewards = []
 
             #get parameters for trajectory following
             horiz_penalty_factor, forward_encouragement_factor, heading_penalty_factor, desired_snake_headingInit = get_trajfollow_params(which_agent, args.desired_traj_type)
@@ -674,7 +676,7 @@ def main():
                     curr_noise_amount = 0.005
                 else:
                     curr_noise_amount=0
-                resulting_x, selected_u, ep_rew, _ = mpc_controller.perform_rollout(starting_state, starting_observation, 
+                resulting_x, selected_u, ep_rew, mydict, replay_states_list, replay_rewards_list = mpc_controller.perform_rollout(starting_state, starting_observation,
                                                                         starting_observation_NNinput, desired_x, 
                                                                         follow_trajectories, horiz_penalty_factor, 
                                                                         forward_encouragement_factor, heading_penalty_factor, 
@@ -685,6 +687,9 @@ def main():
                 selected_multiple_u.append(selected_u)
                 resulting_multiple_x.append(resulting_x)
                 starting_states.append(starting_state)
+                critic_states.append(replay_states_list)
+                critic_rewards.append(replay_rewards_list)
+
 
             if(args.visualize_MPC_rollout):
                 input("\n\nPAUSE BEFORE VISUALIZATION... Press Enter to continue...")
@@ -829,7 +834,7 @@ def main():
                 #perform 1 MPC rollout
                 startrollout = time.time()
                 curr_noise_amount=0
-                _, _, ep_rew, rollout_saved = mpc_controller.perform_rollout(starting_state, starting_observation, 
+                _, _, ep_rew, rollout_saved, replay_states_list_new, replay_rewards_list_new = mpc_controller.perform_rollout(starting_state, starting_observation,
                                                                     starting_observation_NNinput, desired_x, 
                                                                     follow_trajectories, horiz_penalty_factor, 
                                                                     forward_encouragement_factor, heading_penalty_factor, 
