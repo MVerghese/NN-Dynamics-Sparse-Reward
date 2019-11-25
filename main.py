@@ -375,6 +375,9 @@ def main():
         inputs = np.concatenate((dataX, dataY), axis=1)
         outputs = np.copy(dataZ)
 
+        critic_inputs = critic_dataX
+        critic_outputs = critic_dataReward
+
         #doing a render here somehow allows it to not produce an error later
         might_render= False
         if(args.visualize_MPC_rollout or args.might_render):
@@ -391,14 +394,19 @@ def main():
         assert inputs.shape[0] == outputs.shape[0]
         inputSize = inputs.shape[1]
         outputSize = outputs.shape[1]
+
+        #dimensions
+        assert critic_inputs.shape[0] == critic_outputs.shape[0]
+        critic_inputSize = critic_inputs.shape[1]
+
     
         #initialize dynamics model
         dyn_model = Dyn_Model(inputSize, outputSize, sess, lr, batchsize, which_agent, x_index, y_index, num_fc_layers,
                             depth_fc_layers, mean_x, mean_y, mean_z, std_x, std_y, std_z, tf_datatype, print_minimal)
 
         #TODO modify input size
-        cri_model = Cri_Model(inputSize, 1, sess, lr, batchsize, which_agent, x_index, y_index, num_fc_layers,
-                            depth_fc_layers, mean_x, mean_y, mean_r, std_x, std_y, std_r, tf_datatype, print_minimal)
+        cri_model = Cri_Model(critic_inputSize, 1, sess, lr, batchsize, which_agent, x_index, y_index, num_fc_layers,
+                            depth_fc_layers, mean_x, mean_y, mean_z, std_x, std_y, std_z, tf_datatype, print_minimal)
 
         #create mpc controller
         mpc_controller = MPCController(env, dyn_model, cri_model, horizon, which_agent, steps_per_episode, dt_steps, num_control_samples, 
