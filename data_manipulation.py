@@ -180,26 +180,23 @@ def from_observation_to_usablestate(states, which_agent, just_one):
     #######################################
 
     #total = 11
-        # 2-- cos(theta) of the 2 angles
-        # 2-- sin(theta) of the 2 angles
         # 2-- goal pos -------------------(ignore this)
-        # 2-- vel of the 2 angles
-        # 3-- fingertip cm
+        # 2-- dist to goal
+        # 2-- cos/sin(theta)
+        # 1-- vel of theta
+        # 2-- cos/sin(gamma)
+        # 1-- vel of gamma
     if(which_agent==3):
         if(just_one):
             curr_item = np.copy(states)
-            keep_1 = curr_item[0:4]
-            keep_2 = curr_item[6:11]
-            full_item = np.concatenate((keep_1, keep_2), axis=0)
+            full_item = curr_item[2:10]
             return full_item
 
         else:
             new_states=[]
             for i in range(len(states)): #for each rollout
                 curr_item = np.copy(states[i])
-                keep1 = curr_item[:,0:4]
-                keep2 = curr_item[:,6:11]
-                full_item = np.concatenate((keep1, keep2), axis=1)
+                full_item = curr_item[:,2:10]
                 new_states.append(full_item)
             return new_states
 
