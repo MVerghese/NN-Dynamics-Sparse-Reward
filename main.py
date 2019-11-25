@@ -342,7 +342,7 @@ def main():
         dataY_new = np.zeros((0,dataY.shape[1]))
         dataZ_new = np.zeros((0,dataZ.shape[1]))
         critic_dataX_new = np.zeros((0, critic_dataX.shape[1]))
-        critic_dataY_new = np.zeros((0, critic_dataY.shape[1]))
+        #critic_dataY_new = np.zeros((0, critic_dataY.shape[1]))
         critic_dataReward_new = np.zeros((0, critic_dataReward.shape[1]))
         
         #################################################
@@ -441,7 +441,7 @@ def main():
             np.save(save_dir + '/training_data/dataY_new_iter'+ str(counter_agg_iters) + '.npy', dataY_new)
             np.save(save_dir + '/training_data/dataZ_new_iter'+ str(counter_agg_iters) + '.npy', dataZ_new)
             np.save(save_dir + '/training_data/critic_dataX_new_iter' + str(counter_agg_iters) + '.npy', critic_dataX_new)
-            np.save(save_dir + '/training_data/critic_dataY_new_iter' + str(counter_agg_iters) + '.npy', critic_dataY_new)
+            #np.save(save_dir + '/training_data/critic_dataY_new_iter' + str(counter_agg_iters) + '.npy', critic_dataY_new)
             np.save(save_dir + '/training_data/critic_dataReward_new_iter' + str(counter_agg_iters) + '.npy', critic_dataReward_new)
 
 
@@ -456,7 +456,7 @@ def main():
             dataY_new_preprocessed = np.nan_to_num((dataY_new - mean_y)/std_y)
             dataZ_new_preprocessed = np.nan_to_num((dataZ_new - mean_z)/std_z)
             critic_dataX_new_preprocessed = np.nan_to_num((critic_dataX_new - mean_critic_x) / std_critic_x)
-            critic_dataY_new_preprocessed = np.nan_to_num((critic_dataY_new - mean_critic_y) / std_critic_y)
+            #critic_dataY_new_preprocessed = np.nan_to_num((critic_dataY_new - mean_critic_y) / std_critic_y)
 
             ## concatenate state and action, to be used for training dynamics
             inputs_new = np.concatenate((dataX_new_preprocessed, dataY_new_preprocessed), axis=1)
@@ -720,6 +720,8 @@ def main():
                 ##############################
 
                 x_array = np.array(resulting_multiple_x)[0:(rollouts_forTraining+1)]
+                critic_x_array = np.array(critic_states)[0:(rollouts_forTraining+1)]
+                critic_reward_array = np.array(critic_rewards)[0:(rollouts_forTraining+1)]
                 if(which_agent==6 or which_agent==1):
                     u_array = np.array(selected_multiple_u)[0:(rollouts_forTraining+1)]
                 else:
@@ -729,14 +731,21 @@ def main():
                     
                     if(which_agent==6 or which_agent==1):
                         x= np.array(x_array[i])
+                        critic_x= np.array(critic_x_array[i])
+                        critic_R = np.array(critic_reward_array[i])
                         u= np.squeeze(u_array[i], axis=1)
                     else:
                         x= x_array[i] #[N+1, NN_inp]
+                        critic_x= critic_x_array[i]
+                        critic_R= critic_reward_array[i]
                         u= u_array[i] #[N, actionSize]
                     
                     newDataX= np.copy(x[0:-1, :])
                     newDataY= np.copy(u)
                     newDataZ= np.copy(x[1:, :]-x[0:-1, :])
+
+                    newcriticDataX = np.copy(critic_x[0:-1, :])
+                    newcriticDataReward = np.copy(critic_reward[0:-1, :])
                     
                     # make this new data a bit noisy before adding it into the dataset
                     if(make_aggregated_dataset_noisy):
@@ -748,7 +757,7 @@ def main():
                     dataY_new = np.concatenate((dataY_new, newDataY))
                     dataZ_new = np.concatenate((dataZ_new, newDataZ))
                     critic_dataX_new = np.concatenate((critic_dataX_new, newcriticDataX))
-                    critic_dataY_new = np.concatenate((critic_dataY_new, newcriticDataY))
+                    #critic_dataY_new = np.concatenate((critic_dataY_new, newcriticDataY))
                     critic_dataReward_new = np.concatenate((critic_dataReward_new, newcriticDataReward))
 
                 ##############################
