@@ -25,3 +25,18 @@ class HER:
             if (np.sum(np.abs((new_observations[-1 - i][:2] - goal))) < 0.01):
                 new_rewards[-1 - i] = 1
         return new_observations, new_rewards, new_next_observations
+
+    def backward_threaded(self, observations, rewards, next_observations):
+
+        new_observations, new_rewards, new_next_observations = copy.deepcopy(observations), copy.deepcopy(rewards), copy.deepcopy(next_observations)
+        num = len(new_observations)
+        for i in range(num):
+            goal = [next_observations[i][0,-1] + next_observations[i][2,-1],
+                    next_observations[i][1,-1] + next_observations[i][3,-1]]
+            for j in range(len(new_observations[i])):
+                new_rewards[i][-1 - j] = 0
+                new_next_observations[i][:2,(-1 - j)] = goal
+                new_observations[i][:2,(-1 - j)] = goal
+                if (np.sum(np.abs((new_observations[i][:2,(-1 - j)] - goal))) < 0.01):
+                    new_rewards[i][-1 - j] = 1
+        return new_observations, new_rewards, new_next_observations

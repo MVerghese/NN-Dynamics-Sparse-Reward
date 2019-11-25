@@ -89,11 +89,8 @@ class CollectSamples(object):
 
             next_observation, reward, terminal, _ = self.env.step(action, collectingInitialData=True)
 
-            #self.replay_buffer.append(
-                #[dc(observation.squeeze(0).numpy()), dc(action), dc(reward), dc(next_observation.squeeze(0).numpy()), dc(terminal)])
             rewards.append(reward)
             next_observations.append(next_observation)
-            #self.her.keep([observation.squeeze(0).numpy(), action, reward, next_observation.squeeze(0).numpy(), terminal])
             if (terminal == True):
                 break
             observation = np.copy(next_observation)

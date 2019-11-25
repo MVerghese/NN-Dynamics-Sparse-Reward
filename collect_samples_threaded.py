@@ -14,6 +14,8 @@ class CollectSamples(object):
         self.which_agent = which_agent
         self.list_observations=[]
         self.list_actions=[]
+        self.list_rewards=[]
+        self.list_next_observations=[]
         self.list_starting_states=[]
 
         self.stateDim = self.main_env.observation_space.shape[0]
@@ -44,7 +46,15 @@ class CollectSamples(object):
         #return lists of length = num rollouts
         #each entry contains one rollout
         #each entry is [steps_per_rollout x statespace_dim] or [steps_per_rollout x actionspace_dim]
-        return self.list_observations, self.list_actions, self.list_rewards, self.list_next_observations, self.list_starting_states
+
+        new_observations, new_rewards, new_next_observations = self.her.backward_threaded(self.list_observations,
+                                                                                 self.list_rewards,
+                                                                                 self.list_next_observations)
+        replay_observations = np.concatenate(self.list_observations,new_observations)
+        replay_actions = np.concatenate(self.list_actions, self.list_actions)
+        replay_rewards = np.concatenate(self.list_rewards, new_rewards)
+
+        return self.list_observations, self.list_actions, self.list_starting_states, replay_observations, replay_actions, replay_rewards
 
     def mycallback(self, x): #x is shape [numSteps, state + action]
         self.list_observations.append(x[:,0:self.stateDim])
