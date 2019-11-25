@@ -745,7 +745,7 @@ def main():
                     newDataZ= np.copy(x[1:, :]-x[0:-1, :])
 
                     newcriticDataX = np.copy(critic_x[0:-1, :])
-                    newcriticDataReward = np.copy(critic_reward[0:-1, :])
+                    newcriticDataReward = np.copy(critic_R[0:-1, :])
                     
                     # make this new data a bit noisy before adding it into the dataset
                     if(make_aggregated_dataset_noisy):
