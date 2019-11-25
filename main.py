@@ -27,6 +27,7 @@ from helper_funcs import perform_rollouts
 from helper_funcs import create_env
 from helper_funcs import visualize_rendering
 from helper_funcs import add_noise
+from helper_funcs import discounted_returns
 from dynamics_model import Dyn_Model
 from critic_model import Cri_Model
 from mpc_controller import MPCController
@@ -242,7 +243,7 @@ def main():
                 print("#####################################\n")
 
             #perform rollouts
-            states, controls, _, replay_buffer = perform_rollouts(random_policy, num_rollouts_train, steps_per_rollout_train, visualize_False,
+            states, controls, _, replay_states, replay_controls, replay_rewards = perform_rollouts(random_policy, num_rollouts_train, steps_per_rollout_train, visualize_False,
                                                     CollectSamples, env, which_agent, dt_steps, dt_from_xml, follow_trajectories)
 
             if(not(print_minimal)):
@@ -251,7 +252,7 @@ def main():
                 print("#####################################\n")
 
             start_validation_rollouts = time.time()
-            states_val, controls_val, _, replay_buffer_val = perform_rollouts(random_policy, num_rollouts_val, steps_per_rollout_val, visualize_False,
+            states_val, controls_val, _, replay_states_val, replay_controls_val, replay_rewards_val = perform_rollouts(random_policy, num_rollouts_val, steps_per_rollout_val, visualize_False,
                                                             CollectSamples, env, which_agent, dt_steps, dt_from_xml, follow_trajectories)
             
             if(not(print_minimal)):
@@ -273,6 +274,9 @@ def main():
             dataX , dataY = generate_training_data_inputs(states, controls)
             dataZ = generate_training_data_outputs(states, which_agent)
 
+            critic_dataX, critic_dataY = np.concatenate(replay_states, axis=0), np.concatenate(replay_controls, axis=0)
+            critic_dataReward = discounted_returns(replay_rewards)
+
             if(not(print_minimal)):
                 print("\n#####################################")
                 print("Add noise")
@@ -288,7 +292,7 @@ def main():
                 print("Perform rollout & save for forward sim")
                 print("#####################################\n")
 
-            states_forwardsim_orig, controls_forwardsim, _, replay_buffer_forwardsim = perform_rollouts(random_policy, 1, 100,
+            states_forwardsim_orig, controls_forwardsim, _, replay_states_forwardsim, replay_controls_forwardsim, replay_rewards_forwardsim = perform_rollouts(random_policy, 1, 100,
                                                                             visualize_False, CollectSamples, 
                                                                             env, which_agent, dt_steps, 
                                                                             dt_from_xml, follow_trajectories)
@@ -356,6 +360,16 @@ def main():
         dataZ = dataZ - mean_z
         std_z = np.std(dataZ, axis = 0)
         dataZ = np.nan_to_num(dataZ/std_z)
+
+        mean_critic_x = np.mean(critic_dataX, axis=0)
+        critic_dataX = critic_dataX - mean_critic_x
+        std_critic_x = np.std(critic_dataX, axis=0)
+        critic_dataX = np.nan_to_num(critic_dataX / std_critic_x)
+
+        mean_critic_y = np.mean(critic_dataY, axis=0)
+        critic_dataY = critic_dataY - mean_critic_y
+        std_critic_y = np.std(critic_dataY, axis=0)
+        critic_dataY = np.nan_to_num(critic_dataY / std_critic_y)
 
         ## concatenate state and action, to be used for training dynamics
         inputs = np.concatenate((dataX, dataY), axis=1)

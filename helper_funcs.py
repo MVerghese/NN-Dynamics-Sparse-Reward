@@ -34,10 +34,10 @@ def perform_rollouts(policy, num_rollouts, steps_per_rollout, visualize_rollouts
     #collect training data by performing rollouts
     print("Beginning to do ", num_rollouts, " rollouts.")
     c = CollectSamples(env, policy, visualize_rollouts, which_agent, dt_steps, dt_from_xml, follow_trajectories)
-    states, controls, starting_states, replay_buffer = c.collect_samples(num_rollouts, steps_per_rollout)
+    states, controls, starting_states, replay_states, replay_controls, replay_rewards = c.collect_samples(num_rollouts, steps_per_rollout)
 
     print("Performed ", len(states), " rollouts, each with ", states[0].shape[0], " steps.")
-    return states, controls, starting_states, replay_buffer
+    return states, controls, starting_states, replay_states, replay_controls, replay_rewards
 
 
 def create_env(which_agent):
@@ -101,3 +101,12 @@ def visualize_rendering(starting_state, list_of_actions, env_inp, dt_steps, dt_f
 
     print("Done rendering.")
     return
+
+def discounted_returns(rewards, gamma=0.99):
+    discounted_rewards = []
+    for i in range(len(rewards)):
+        coeff = [gamma ** k for k in range(len(rewards[i]))]
+        for j in range(len(rewards[i])):
+            temp = len(rewards[i]) - j
+            discounted_rewards.append(np.sum(rewards[i][j:] * coeff[:temp]))
+    return discounted_rewards
