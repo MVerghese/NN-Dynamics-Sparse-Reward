@@ -230,6 +230,9 @@ def main():
             dataX= np.load(save_dir + '/training_data/dataX.npy') # input1: state
             dataY= np.load(save_dir + '/training_data/dataY.npy') # input2: control
             dataZ= np.load(save_dir + '/training_data/dataZ.npy') # output: nextstate-state
+            critic_dataX = np.load(save_dir + '/training_data/critic_dataX.npy')  # input1: state
+            critic_dataY = np.load(save_dir + '/training_data/critic_dataY.npy')  # input2: control
+            critic_dataReward = np.load(save_dir + '/training_data/critic_dataReward.npy')  # output: nextstate-state
             states_val= np.load(save_dir + '/training_data/states_val.npy')
             controls_val= np.load(save_dir + '/training_data/controls_val.npy')
             forwardsim_x_true= np.load(save_dir + '/training_data/forwardsim_x_true.npy')
@@ -307,6 +310,9 @@ def main():
             np.save(save_dir + '/training_data/dataX.npy', dataX)
             np.save(save_dir + '/training_data/dataY.npy', dataY)
             np.save(save_dir + '/training_data/dataZ.npy', dataZ)
+            np.save(save_dir + '/training_data/critic_dataX.npy', critic_dataX)
+            np.save(save_dir + '/training_data/critic_dataY.npy', critic_dataY)
+            np.save(save_dir + '/training_data/critic_dataReward.npy', critic_dataReward)
             np.save(save_dir + '/training_data/states_val.npy', states_val)
             np.save(save_dir + '/training_data/controls_val.npy', controls_val)
             np.save(save_dir + '/training_data/forwardsim_x_true.npy', forwardsim_x_true)
@@ -335,6 +341,9 @@ def main():
         dataX_new = np.zeros((0,dataX.shape[1]))
         dataY_new = np.zeros((0,dataY.shape[1]))
         dataZ_new = np.zeros((0,dataZ.shape[1]))
+        critic_dataX_new = np.zeros((0, critic_dataX.shape[1]))
+        critic_dataY_new = np.zeros((0, critic_dataY.shape[1]))
+        critic_dataReward_new = np.zeros((0, critic_dataReward.shape[1]))
         
         #################################################
         ### preprocess the old training dataset
@@ -431,6 +440,10 @@ def main():
             np.save(save_dir + '/training_data/dataX_new_iter'+ str(counter_agg_iters) + '.npy', dataX_new)
             np.save(save_dir + '/training_data/dataY_new_iter'+ str(counter_agg_iters) + '.npy', dataY_new)
             np.save(save_dir + '/training_data/dataZ_new_iter'+ str(counter_agg_iters) + '.npy', dataZ_new)
+            np.save(save_dir + '/training_data/critic_dataX_new_iter' + str(counter_agg_iters) + '.npy', critic_dataX_new)
+            np.save(save_dir + '/training_data/critic_dataY_new_iter' + str(counter_agg_iters) + '.npy', critic_dataY_new)
+            np.save(save_dir + '/training_data/critic_dataReward_new_iter' + str(counter_agg_iters) + '.npy', critic_dataReward_new)
+
 
             starting_big_loop = time.time()
 
@@ -442,10 +455,15 @@ def main():
             dataX_new_preprocessed = np.nan_to_num((dataX_new - mean_x)/std_x)
             dataY_new_preprocessed = np.nan_to_num((dataY_new - mean_y)/std_y)
             dataZ_new_preprocessed = np.nan_to_num((dataZ_new - mean_z)/std_z)
+            critic_dataX_new_preprocessed = np.nan_to_num((critic_dataX_new - mean_critic_x) / std_critic_x)
+            critic_dataY_new_preprocessed = np.nan_to_num((critic_dataY_new - mean_critic_y) / std_critic_y)
 
             ## concatenate state and action, to be used for training dynamics
             inputs_new = np.concatenate((dataX_new_preprocessed, dataY_new_preprocessed), axis=1)
             outputs_new = np.copy(dataZ_new_preprocessed)
+
+            critic_inputs_new = critic_dataX_new_preprocessed
+            critic_outputs_new = critic_dataReward_new
 
             if(not(print_minimal)):
                 print("\n#####################################")
@@ -464,7 +482,7 @@ def main():
                 training_loss, old_loss, new_loss = dyn_model.train(inputs, outputs, inputs_new, outputs_new, 
                                                                     nEpoch, save_dir, fraction_use_new)
 
-                cri_training_loss, cri_old_loss, cri_new_loss = cri_model.train(inputs, outputs, inputs_new, outputs_new, 
+                cri_training_loss, cri_old_loss, cri_new_loss = cri_model.train(critic_inputs, critic_outputs, critic_inputs_new, critic_outputs_new,
                                                                     nEpoch, save_dir, fraction_use_new)
 
             #how good is model on training data
@@ -724,6 +742,9 @@ def main():
                     dataX_new = np.concatenate((dataX_new, newDataX))
                     dataY_new = np.concatenate((dataY_new, newDataY))
                     dataZ_new = np.concatenate((dataZ_new, newDataZ))
+                    critic_dataX_new = np.concatenate((critic_dataX_new, newcriticDataX))
+                    critic_dataY_new = np.concatenate((critic_dataY_new, newcriticDataY))
+                    critic_dataReward_new = np.concatenate((critic_dataReward_new, newcriticDataReward))
 
                 ##############################
                 ### aggregate the rest of the rollouts into validation set
