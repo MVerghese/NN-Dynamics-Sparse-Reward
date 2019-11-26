@@ -230,7 +230,7 @@ class MPCController:
             prev_pt = np.copy(pt)
             """
 
-         for pt_number in range(resulting_states.shape[0]):
+        for pt_number in range(resulting_states.shape[0]):
 
             #array of "the point"... for each sim
             pt = resulting_states[pt_number] # N x state
