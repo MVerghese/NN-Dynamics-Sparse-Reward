@@ -343,7 +343,7 @@ def main():
         dataZ_new = np.zeros((0,dataZ.shape[1]))
         critic_dataX_new = np.zeros((0, critic_dataX.shape[1]))
         #critic_dataY_new = np.zeros((0, critic_dataY.shape[1]))
-        critic_dataReward_new = np.zeros((0, critic_dataReward.shape[1]))
+        critic_dataReward_new = np.zeros((0, 1))
         
         #################################################
         ### preprocess the old training dataset
