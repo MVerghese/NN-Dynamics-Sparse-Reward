@@ -265,9 +265,13 @@ def main():
 
             #training
             states = from_observation_to_usablestate(states, which_agent, False)
+            replay_states = from_observation_to_usablestate(replay_states, which_agent, False)
             #validation
             states_val = from_observation_to_usablestate(states_val, which_agent, False)
             states_val = np.array(states_val)
+
+            replay_states_val = from_observation_to_usablestate(replay_states_val, which_agent, False)
+            replay_states_val = np.array(replay_states_val)
 
             if(not(print_minimal)):
                 print("\n#####################################")
@@ -488,7 +492,7 @@ def main():
                 print("#####################################\n")
 
             critic_training_loss, critic_old_loss, critic_new_loss = cri_model.train(critic_inputs, critic_outputs, critic_inputs_new, critic_outputs_new,
-                                                                    700, save_dir, fraction_use_new)
+                                                                    25, save_dir, fraction_use_new)
 
             #how good is model on training data
             training_loss_list.append(training_loss)
