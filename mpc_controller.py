@@ -236,8 +236,9 @@ class MPCController:
             pt = resulting_states[pt_number] # N x state
 
             pt_scores = self.cri_model.eval_model(np.copy(pt),self.env,self.which_agent)
-
-            scores += pt_scores
+            #import pdb; pdb.set_trace()
+            #print(scores.shape, pt_scores[0].shape)
+            scores += pt_scores[0][:,0]
 
 
         #pick best action sequence

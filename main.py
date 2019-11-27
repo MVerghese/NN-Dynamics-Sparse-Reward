@@ -385,7 +385,7 @@ def main():
         outputs = np.copy(dataZ)
 
         critic_inputs = critic_dataX
-        critic_outputs = critic_dataReward
+        critic_outputs = critic_dataReward.reshape(critic_dataReward.shape[0],1)
 
         #doing a render here somehow allows it to not produce an error later
         might_render= False
@@ -482,8 +482,13 @@ def main():
                 training_loss, old_loss, new_loss = dyn_model.train(inputs, outputs, inputs_new, outputs_new, 
                                                                     nEpoch, save_dir, fraction_use_new)
 
-                cri_training_loss, cri_old_loss, cri_new_loss = cri_model.train(critic_inputs, critic_outputs, critic_inputs_new, critic_outputs_new,
-                                                                    nEpoch, save_dir, fraction_use_new)
+            if(not(print_minimal)):
+                print("\n#####################################")
+                print("Training the critic model")
+                print("#####################################\n")
+
+            critic_training_loss, critic_old_loss, critic_new_loss = cri_model.train(critic_inputs, critic_outputs, critic_inputs_new, critic_outputs_new,
+                                                                    700, save_dir, fraction_use_new)
 
             #how good is model on training data
             training_loss_list.append(training_loss)
@@ -493,6 +498,7 @@ def main():
             new_loss_list.append(new_loss)
 
             print("\nTraining loss: ", training_loss)
+            print("\nCritic Training loss: ", critic_training_loss)
 
             #####################################
             ## Saving model
