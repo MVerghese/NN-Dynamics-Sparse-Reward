@@ -92,11 +92,14 @@ class Cri_Model:
                         dataZ_new_batch = dataZ_new[new_indeces, :]
 
                     #walk through the randomly reordered "old data"
+                    #print(dataX.shape)
+                    #print(dataZ.shape)
                     dataX_old_batch = dataX[old_indeces[batch*batchsize_old_pts:(batch+1)*batchsize_old_pts], :]
                     dataZ_old_batch = dataZ[old_indeces[batch*batchsize_old_pts:(batch+1)*batchsize_old_pts], :]
                     
                     #combine the old and new data
                     dataX_batch = np.concatenate((dataX_old_batch, dataX_new_batch))
+                    #print(dataZ_old_batch.shape,dataZ_new_batch.shape)
                     dataZ_batch = np.concatenate((dataZ_old_batch, dataZ_new_batch))
 
                     #one iteration of feedforward training
@@ -132,7 +135,7 @@ class Cri_Model:
             if(not(self.print_minimal)):
                 if((i%10)==0):
                     print("\n=== Epoch {} ===".format(i))
-                    print ("loss: ", avg_loss/num_batches)
+                    print ("Critic loss: ", avg_loss/num_batches)
         
         if(not(self.print_minimal)):
             print ("Training set size: ", (nData_old + dataX_new.shape[0]))
@@ -195,8 +198,8 @@ class Cri_Model:
         return (avg_loss/iters_in_batch)
 
     def eval_model(self, forwardsim_x_true, env_inp, which_agent):
-        N= forwardsim_y.shape[0]
-        horizon = forwardsim_y.shape[1]
+        N= forwardsim_x_true.shape[0]
+        horizon = forwardsim_x_true.shape[1]
         #array_stdz = np.tile(np.expand_dims(self.std_z, axis=0),(N,1))
         #array_meanz = np.tile(np.expand_dims(self.mean_z, axis=0),(N,1))
         array_stdy = np.tile(np.expand_dims(self.std_y, axis=0),(N,1))
@@ -212,7 +215,7 @@ class Cri_Model:
 
         states_preprocessed = np.nan_to_num(np.divide((curr_states-array_meanx), array_stdx))
 
-        inputs_list= np.concatenate((states_preprocessed, actions_preprocessed), axis=1)
+        inputs_list= states_preprocessed#np.concatenate((states_preprocessed, actions_preprocessed), axis=1)
 
         #run the N sims all at once
         model_output = self.sess.run([self.curr_nn_output], feed_dict={self.x_: inputs_list})

@@ -186,8 +186,8 @@ class MPCController:
         new_observations, new_rewards, new_next_observations = self.her.backward(replay_observations,replay_rewards,
                 replay_next_observations)
 
-        replay_observations_list = np.concatenate(replay_observations, new_observations)
-        replay_rewards_list = np.concatenate(replay_rewards, new_rewards)
+        replay_observations_list = np.concatenate((replay_observations, new_observations))
+        replay_rewards_list = np.concatenate((replay_rewards, new_rewards))
 
         return traj_taken, actions_taken, total_reward_for_episode, mydict, replay_observations_list, replay_rewards_list
 
@@ -230,14 +230,15 @@ class MPCController:
             prev_pt = np.copy(pt)
             """
 
-         for pt_number in range(resulting_states.shape[0]):
+        for pt_number in range(resulting_states.shape[0]):
 
             #array of "the point"... for each sim
             pt = resulting_states[pt_number] # N x state
 
             pt_scores = self.cri_model.eval_model(np.copy(pt),self.env,self.which_agent)
-
-            scores += pt_scores
+            #import pdb; pdb.set_trace()
+            #print(scores.shape, pt_scores[0].shape)
+            scores += pt_scores[0][:,0]
 
 
         #pick best action sequence

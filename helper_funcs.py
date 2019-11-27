@@ -109,4 +109,4 @@ def discounted_returns(rewards, gamma=0.99):
         for j in range(len(rewards[i])):
             temp = len(rewards[i]) - j
             discounted_rewards.append(np.sum(rewards[i][j:] * coeff[:temp]))
-    return discounted_rewards
+    return np.array(discounted_rewards)
