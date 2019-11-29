@@ -15,7 +15,8 @@ class MPCController:
 
     def __init__(self, env_inp, dyn_model, cri_model, horizon, which_agent, steps_per_episode, dt_steps, num_control_samples, 
                 mean_x, mean_y, mean_z, std_x, std_y, std_z, actions_ag, print_minimal, x_index, y_index, z_index, yaw_index, 
-                joint1_index, joint2_index, frontleg_index, frontshin_index, frontfoot_index, xvel_index, orientation_index):
+                joint1_index, joint2_index, frontleg_index, frontshin_index, frontfoot_index, xvel_index,
+                orientation_index):
 
         #init vars
         self.env=copy.deepcopy(env_inp)

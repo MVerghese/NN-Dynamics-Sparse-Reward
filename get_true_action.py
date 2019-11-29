@@ -14,6 +14,7 @@ from data_manipulation import from_observation_to_usablestate
 from dynamics_model import Dyn_Model
 from data_manipulation import get_indices
 from mpc_controller import MPCController
+from critic_model import Cri_Model
 from trajectories import make_trajectory
 
 class GetTrueAction:
@@ -36,8 +37,18 @@ class GetTrueAction:
         dataY= np.load(rundir + '/training_data/dataY.npy')
         dataZ= np.load(rundir + '/training_data/dataZ.npy')
         inputs = np.concatenate((dataX, dataY), axis=1)
+
+        critic_dataX = np.load(rundir + '/training_data/critic_dataY.npy')
+        critic_dataY = np.load(rundir + '/training_data/critic_dataY.npy')
+        critic_dataReward = np.load(rundir + '/training_data/critic_dataReward.npy')
+
+        critic_inputs = critic_dataX
+        critic_outputs = critic_dataReward.reshape(critic_dataReward.shape[0], 1)
+
         assert inputs.shape[0] == dataZ.shape[0]
+        assert critic_inputs.shape[0] == critic_outputs.shape[0]
         inputSize = inputs.shape[1]
+        critic_inputSize = critic_inputs.shape[1]
         outputSize = dataZ.shape[1]
 
         #calculate the means and stds
@@ -54,13 +65,26 @@ class GetTrueAction:
         self.std_z = np.std(dataZ, axis = 0)
         dataZ = np.nan_to_num(dataZ/self.std_z)
 
+        self.mean_critic_x = np.mean(critic_dataX, axis=0)
+        critic_dataX = critic_dataX - self.mean_critic_x
+        self.std_critic_x = np.std(critic_dataX, axis=0)
+        critic_dataX = np.nan_to_num(critic_dataX / self.std_critic_x)
+
+        self.mean_critic_y = np.mean(critic_dataY, axis=0)
+        critic_dataY = critic_dataY - self.mean_critic_y
+        self.std_critic_y = np.std(critic_dataY, axis=0)
+        critic_dataY = np.nan_to_num(critic_dataY / self.std_critic_y)
+
         #get x and y index
-        x_index, y_index, z_index, yaw_index, joint1_index, joint2_index, frontleg_index, frontshin_index, frontfoot_index, xvel_index, orientation_index = get_indices(which_agent)
+        x_index, y_index, z_index, yaw_index, joint1_index, joint2_index, frontleg_index, frontshin_index, \
+                                frontfoot_index, xvel_index, orientation_index = get_indices(which_agent)
 
         #make dyn model and randomly initialize weights
         self.dyn_model = Dyn_Model(inputSize, outputSize, self.sess, lr, batchsize, which_agent, x_index, y_index, num_fc_layers, 
                                     depth_fc_layers, self.mean_x, self.mean_y, self.mean_z, self.std_x, self.std_y, self.std_z, 
                                     tf_datatype, self.print_minimal)
+        self.cri_model = Cri_Model(critic_inputSize, 1, sess, lr, batchsize, which_agent, x_index, y_index, num_fc_layers,
+                              depth_fc_layers, self.mean_critic_x, self.mean_critic_y, self.mean_z, self.std_critic_x, self.std_critic_y, self.std_z, tf_datatype, print_minimal)
         self.sess.run(tf.global_variables_initializer())
 
         #load in weights from desired trained dynamics model
@@ -70,7 +94,7 @@ class GetTrueAction:
         print("\n\nRestored dynamics model with variables from ", pathname,"\n\n")
 
         #make controller, to use for querying optimal action
-        self.mpc_controller = MPCController(self.env, self.dyn_model, self.horizon, self.which_agent, self.steps_per_episode, 
+        self.mpc_controller = MPCController(self.env, self.dyn_model, self.cri_model, self.horizon, self.which_agent, self.steps_per_episode,
                                             self.dt_steps, self.N, self.mean_x, self.mean_y, self.mean_z, self.std_x, self.std_y, 
                                             self.std_z, 'nc', self.print_minimal, x_index, y_index, z_index, yaw_index, joint1_index, 
                                             joint2_index, frontleg_index, frontshin_index, frontfoot_index, xvel_index, orientation_index)

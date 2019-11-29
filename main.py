@@ -419,7 +419,7 @@ def main():
 
         #TODO modify input size
         cri_model = Cri_Model(critic_inputSize, 1, sess, lr, batchsize, which_agent, x_index, y_index, num_fc_layers,
-                            depth_fc_layers, mean_x, mean_y, mean_z, std_x, std_y, std_z, tf_datatype, print_minimal)
+                            depth_fc_layers, mean_critic_x, mean_critic_y, mean_z, std_critic_x, std_critic_y, std_z, tf_datatype, print_minimal)
 
         #create mpc controller
         mpc_controller = MPCController(env, dyn_model, cri_model, horizon, which_agent, steps_per_episode, dt_steps, num_control_samples, 

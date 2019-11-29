@@ -171,7 +171,7 @@ if(which_agent==1):
 ##########################################
 
 #get vars from saved MB run
-param_dict = np.load('run_'+ str(run_num) + '/params.pkl')
+param_dict = np.load('run_'+ str(run_num) + '/params.pkl', allow_pickle=True)
 N = param_dict['num_control_samples']
 horizon = param_dict['horizon']
 num_fc_layers_old = param_dict['num_fc_layers']
