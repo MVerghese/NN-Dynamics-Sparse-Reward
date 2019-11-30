@@ -492,7 +492,7 @@ def main():
                 print("#####################################\n")
 
             critic_training_loss, critic_old_loss, critic_new_loss = cri_model.train(critic_inputs, critic_outputs, critic_inputs_new, critic_outputs_new,
-                                                                    25, save_dir, fraction_use_new)
+                                                                    1000, save_dir, fraction_use_new)
 
             #how good is model on training data
             training_loss_list.append(training_loss)

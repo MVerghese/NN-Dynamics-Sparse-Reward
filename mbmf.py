@@ -570,7 +570,7 @@ with tf.Session(config=config) as sess:
 	states, controls, _, replay_states, replay_controls, replay_rewards = perform_rollouts(policy, 1, steps_per_rollout, visualize_mlp_policy,
 																CollectSamples, env, which_agent, dt_steps, dt_from_xml, False)
 	print("Std of the MLP policy: ", std_on_mlp_policy)
-	print("Reward of the MLP policy: ", sum(replay_rewards))
+	print("Reward of the MLP policy: ", sum(sum(replay_rewards)))
 	
 	################################
 	### TRAIN MLP POLICY W/ TRPO ###
