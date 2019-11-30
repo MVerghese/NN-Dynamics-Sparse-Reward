@@ -38,7 +38,7 @@ class GetTrueAction:
         dataZ= np.load(rundir + '/training_data/dataZ.npy')
         inputs = np.concatenate((dataX, dataY), axis=1)
 
-        critic_dataX = np.load(rundir + '/training_data/critic_dataY.npy')
+        critic_dataX = np.load(rundir + '/training_data/critic_dataX.npy')
         critic_dataY = np.load(rundir + '/training_data/critic_dataY.npy')
         critic_dataReward = np.load(rundir + '/training_data/critic_dataReward.npy')
 
@@ -49,6 +49,7 @@ class GetTrueAction:
         assert critic_inputs.shape[0] == critic_outputs.shape[0]
         inputSize = inputs.shape[1]
         critic_inputSize = critic_inputs.shape[1]
+        print(critic_inputSize)
         outputSize = dataZ.shape[1]
 
         #calculate the means and stds
