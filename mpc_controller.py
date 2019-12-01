@@ -25,7 +25,7 @@ class MPCController:
         self.horizon = horizon
         self.dyn_model = dyn_model
         self.cri_model = cri_model
-        self.steps_per_episode = steps_per_episode 
+        self.steps_per_episode = steps_per_episode
         self.mean_x = mean_x
         self.mean_y = mean_y
         self.mean_z = mean_z
@@ -92,8 +92,8 @@ class MPCController:
         traj_taken.append(curr_state)
 
         #select task or reward func
-        reward_func = self.reward_functions.get_reward_func(follow_trajectories, self.desired_states, horiz_penalty_factor, 
-                                                            forward_encouragement_factor, heading_penalty_factor)
+        reward_func = 0#self.reward_functions.get_reward_func(follow_trajectories, self.desired_states, horiz_penalty_factor,
+                                                            #forward_encouragement_factor, heading_penalty_factor)
 
         #take steps according to the chosen task/reward function
         while(stop_taking_steps==False):
@@ -125,7 +125,10 @@ class MPCController:
                 action_to_take=np.clip(action_to_take, -1,1)
 
             #execute the action
-            next_state, rew, done, env_info = self.env.step(action_to_take, collectingInitialData=False)
+            if(self.which_agent==3):
+                next_state, rew, done, env_info = self.env.step(action_to_take)
+            else:
+                next_state, rew, done, env_info = self.env.step(action_to_take, collectingInitialData=False)
 
             #check if done
             if(done):
@@ -133,6 +136,7 @@ class MPCController:
                 replay_observations.append(obs)
                 replay_rewards.append(rew)
                 replay_next_observations.append(next_state)
+                total_reward_for_episode += rew
             else:
                 #save things
                 observations.append(obs)
