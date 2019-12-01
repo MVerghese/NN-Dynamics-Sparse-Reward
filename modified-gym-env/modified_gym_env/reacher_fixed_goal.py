@@ -26,6 +26,8 @@ class Reacher(MJCFBasedRobot):
         else:
             self.elbow_joint.reset_current_position(np.pi/4, 0)
 
+        return [self.central_joint, self.elbow_joint]
+
     def apply_action(self, a):
         assert (np.isfinite(a).all())
         self.central_joint.set_motor_torque(0.05 * float(np.clip(a[0], -1, +1)))

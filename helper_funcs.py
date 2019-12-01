@@ -63,6 +63,8 @@ def create_env(which_agent):
     #get dt value from env
     if(which_agent==5):
         dt_from_xml = env.VREP_DT
+    elif(which_agent==3):
+        dt_from_xml = 0.02
     else:
         dt_from_xml = env.model.opt.timestep
     print("\n\n the dt is: ", dt_from_xml, "\n\n")
@@ -108,5 +110,6 @@ def discounted_returns(rewards, gamma=0.99):
         coeff = [gamma ** k for k in range(len(rewards[i]))]
         for j in range(len(rewards[i])):
             temp = len(rewards[i]) - j
+            #print(type(coeff[temp-1]))
             discounted_rewards.append(np.sum(rewards[i][j:] * coeff[:temp]))
     return np.array(discounted_rewards)

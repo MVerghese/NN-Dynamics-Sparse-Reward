@@ -42,6 +42,9 @@ class CollectSamples(object):
                     observation, starting_state = self.env.reset(returnStartState=True, isSwimmer=True, need_diff_headings=True)
                 else:
                     observation, starting_state = self.env.reset(returnStartState=True, isSwimmer=True)
+            elif(self.which_agent==3):
+                observation = self.env.reset()
+                starting_state = observation
             else:
                 observation, starting_state = self.env.reset(returnStartState=True)
             observations, actions, rewards, next_observations = self.perform_rollout(observation, steps_per_rollout,
@@ -87,7 +90,10 @@ class CollectSamples(object):
             observations.append(observation)
             actions.append(action)
 
-            next_observation, reward, terminal, _ = self.env.step(action, collectingInitialData=True)
+            if(self.which_agent==3):
+                next_observation, reward, terminal, _ = self.env.step(action)
+            else:
+                next_observation, reward, terminal, _ = self.env.step(action, collectingInitialData=True)
 
             rewards.append(reward)
             next_observations.append(next_observation)

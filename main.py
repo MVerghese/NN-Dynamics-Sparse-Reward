@@ -248,7 +248,7 @@ def main():
             #perform rollouts
             states, controls, _, replay_states, replay_controls, replay_rewards = perform_rollouts(random_policy, num_rollouts_train, steps_per_rollout_train, visualize_False,
                                                     CollectSamples, env, which_agent, dt_steps, dt_from_xml, follow_trajectories)
-
+            #print(replay_rewards)
             if(not(print_minimal)):
                 print("\n#####################################")
                 print("Performing rollouts to collect validation data")
@@ -492,7 +492,7 @@ def main():
                 print("#####################################\n")
 
             critic_training_loss, critic_old_loss, critic_new_loss = cri_model.train(critic_inputs, critic_outputs, critic_inputs_new, critic_outputs_new,
-                                                                    1000, save_dir, fraction_use_new)
+                                                                    60, save_dir, fraction_use_new)
 
             #how good is model on training data
             training_loss_list.append(training_loss)
@@ -669,6 +669,9 @@ def main():
                 #reset env and set the desired traj 
                 if(which_agent==2):
                     starting_observation, starting_state = env.reset(evaluating=True, returnStartState=True, isSwimmer=True)
+                elif(which_agent==3):
+                    starting_observation = env.reset()
+                    starting_state = starting_observation
                 else:
                     starting_observation, starting_state = env.reset(evaluating=True, returnStartState=True)
                 #start swimmer heading in correct direction
@@ -679,6 +682,7 @@ def main():
                 #desired trajectory to follow
                 starting_observation_NNinput = from_observation_to_usablestate(starting_observation, which_agent, True)
                 desired_x = make_trajectory(args.desired_traj_type, starting_observation_NNinput, x_index, y_index, which_agent)
+                #print(desired_x)
 
                 #perform 1 MPC rollout
                 #depending on follow_trajectories, either move forward or follow desired_traj_type
@@ -739,7 +743,7 @@ def main():
 
                 for i in range(rollouts_forTraining):
                     
-                    if(which_agent==6 or which_agent==1):
+                    if(which_agent==6 or which_agent==1 or which_agent==2):
                         x= np.array(x_array[i])
                         critic_x= np.array(critic_x_array[i])
                         critic_R = np.array(critic_reward_array[i])
@@ -755,7 +759,8 @@ def main():
                     newDataZ= np.copy(x[1:, :]-x[0:-1, :])
 
                     newcriticDataX = np.copy(critic_x[0:-1, :])
-                    newcriticDataReward = np.copy(critic_R[0:-1, :])
+                    print('Critic_R:',critic_R)
+                    newcriticDataReward = np.copy(critic_R[0:-1,:])
                     
                     # make this new data a bit noisy before adding it into the dataset
                     if(make_aggregated_dataset_noisy):

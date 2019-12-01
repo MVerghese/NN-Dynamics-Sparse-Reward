@@ -32,7 +32,7 @@ class ReacherBulletEnv(BaseBulletEnv):
             done = True
             self.reward = [0]
         self.HUD(state, a, False)
-        return state, sum(self.reward), done, {}
+        return state, self.reward, done, {}
 
     def camera_adjust(self):
         x, y, z = self.robot.fingertip.pose().xyz()

@@ -2,7 +2,7 @@ which_agent: 3
 follow_trajectories: False
 
 data_collection:
-    use_threading: True
+    use_threading: False
     num_rollouts_train: 25
     num_rollouts_val: 20
 

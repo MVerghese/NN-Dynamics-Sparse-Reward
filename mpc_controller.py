@@ -80,6 +80,8 @@ class MPCController:
         #reset env to the given full env state
         if(self.which_agent==5):
             self.env.reset()
+        elif(self.which_agent==3):
+            self.env.reset()
         else:
             self.env.reset(starting_fullenvstate)
 
