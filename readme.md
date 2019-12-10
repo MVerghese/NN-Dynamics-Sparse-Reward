@@ -1,6 +1,6 @@
 # Extending Model-Based Reinforcement Learning to Sparse Reward Environments
 
-This work is an extension of Neural Network Dynamics for Model-Based Deep Reinforcement Learning with Model-Free Fine-Tuning by Nagabandi et. al. We enabled the original approach to work on sparse reward environments where the reward may not be in the horizon of the model-based controller. We demonstrated equivalent results, both for the purely model based controller, and the hybrid Model-Based Model-Free algorithim in these sparse reward envrionments.
+This work is an extension of Neural Network Dynamics for Model-Based Deep Reinforcement Learning with Model-Free Fine-Tuning by Nagabandi et. al. We enabled the original approach to work on sparse reward environments where the reward may not be in the horizon of the model-based controller. We demonstrated equivalent results, both for the purely model based controller, and the hybrid Model-Based Model-Free algorithim in these sparse reward envrionments. Please see the original work and paper below.
 
 **Neural Network Dynamics for Model-Based Deep Reinforcement Learning with Model-Free Fine-Tuning**
 
